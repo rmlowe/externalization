@@ -243,23 +243,40 @@ Default is `sessions.secure=true`.
 * Multiple sites can share the same applications files!
 * Easy to upgrade multiple sites at once (if that's what you want to do).
 
+```xml
+<Context docBase="C:\Path\To\Shared\AppDir">
+  ...
+  <Parameter name="base" value="C:\Sites\example" override="false"/>
+  ...
+</Context>
+```
+
 ---
 
 # Another thought
 
 ```
-            /-> Build X
-Tomcat A --/    Build Y <----- Tomcat B
+                             /-> C:\Builds\X
+C:\Sites\A <---- Tomcat A --/    C:\Builds\Y <----- Tomcat B ----> C:\Sites\B
 
 
-                Build X
-Tomcat A --\    Build Y <----- Tomcat B
-            \-> Build Z
+                                 C:\Builds\X
+C:\Sites\A <---- Tomcat A --\    C:\Builds\Y <----- Tomcat B ----> C:\Sites\B
+                             \-> C:\Builds\Z
 
 
-                Build X
-Tomcat A --\    Build Y    /-- Tomcat B
-            \-> Build Z <-/
+                                 C:\Builds\X
+C:\Sites\A <---- Tomcat A --\    C:\Builds\Y    /-- Tomcat B ----> C:\Sites\B
+                             \-> C:\Builds\Z <-/
+
+```
+
+```xml
+<Context docBase="C:\Builds\X">
+  ...
+  <Parameter name="base" value="C:\Sites\A" override="false"/>
+  ...
+</Context>
 ```
 
 ---
