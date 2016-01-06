@@ -243,10 +243,14 @@ Default is `sessions.secure=true`.
 * Multiple sites can share the same applications files!
 * Easy to upgrade multiple sites at once (if that's what you want to do).
 
+```
+C:\Sites\A <---- Tomcat A -----> C:\TalentSuiteApp <----- Tomcat B ----> C:\Sites\B
+```
+
 ```xml
-<Context docBase="C:\Path\To\Shared\AppDir">
+<Context docBase="C:\TalentSuiteApp">
   ...
-  <Parameter name="base" value="C:\Sites\example" override="false"/>
+  <Parameter name="base" value="C:\Sites\A" override="false"/>
   ...
 </Context>
 ```
@@ -268,7 +272,6 @@ C:\Sites\A <---- Tomcat A --\    C:\Builds\Y <----- Tomcat B ----> C:\Sites\B
                                  C:\Builds\X
 C:\Sites\A <---- Tomcat A --\    C:\Builds\Y    /-- Tomcat B ----> C:\Sites\B
                              \-> C:\Builds\Z <-/
-
 ```
 
 ```xml
