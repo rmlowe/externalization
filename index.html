@@ -13,7 +13,26 @@
         font-family: 'Yanone Kaffeesatz';
         font-weight: normal;
       }
+      code {
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
     </style>
   </head>
   <body>
@@ -21,19 +40,233 @@
 
 class: center, middle
 
-# Title
+# How Talent Suite 11.2 can make your life better :-)
 
 ---
 
-# Agenda
+# Problem
 
-1. Introduction
-2. Deep-dive
-3. ...
+* Application files and site files are mixed together
+* Sometimes even in the same file! (`web.xml`)
+* This makes upgrades more difficult
 
 ---
 
-# Introduction
+# Directory structure, pre-11.2
+
+```
+index.html (a)
+nd/fresco
+ |-- applets (a)
+ |-- batchreports (c)
+ |-- dataloader (c)
+ |-- javascript (a)
+ |-- repository (c)
+ +-- styles (a/c)
+WEB-INF
+ |-- conf
+ |    |-- ekp.properties (c)
+ |    |-- license.ekp (c)
+ |    +-- login.wm (c)
+ |-- indexes (c)
+ |-- lib (a)
+ |-- logs (c)
+ +-- web.xml (a)
+```
+
+---
+
+# 11.2 directory structure
+
+.pull-left[
+## Application directory
+
+```
+index.html
+nd/fresco
+ |-- applets
+ |-- javascript
+ +-- styles_core
+WEB-INF
+ |-- lib
+ +-- web.xml
+```
+]
+.pull-right[
+## Site directory
+
+```
+nd/fresco
+ |-- batchreports
+ |-- dataloader
+ |-- repository
+ +-- styles
+WEB-INF
+ |-- conf
+ |    |-- ekp.properties
+ |    |-- license.ekp
+ |    +-- login.wm
+ |-- indexes
+ +-- logs
+```
+]
+
+---
+
+# Configuring the site directory
+
+```xml
+<Context>
+  ...
+  <Parameter name="base" value="C:\Sites\example" override="false"/>
+  ...
+</Context>
+```
+
+Learn more about Tomcat context files [here](https://tomcat.apache.org/tomcat-6.0-doc/config/context.html#Context_Parameters).
+
+---
+
+# For new sites
+
+* Create a site directory with key files (`/WEB-INF/conf/ekp.properties`, `/WEB-INF/conf/license.ekp`, and possibly
+  `/WEB-INF/conf/login.wm`).
+* Configure `base` context parameter to reference the site directory.
+* Start Tomcat.
+
+---
+
+# Upgrading an existing site to 11.2
+
+* Upgrade as usual.
+* Make a copy of the application directory.
+* Configure `base` context parameter to reference this copy.
+* Start Tomcat.
+
+---
+
+# Subsequent updates
+
+* Delete application directory (and old WAR file if necessary).
+* Copy (and rename) new WAR file.
+* Start Tomcat.
+
+---
+
+# What about `web.xml`?
+
+* `web.xml` is an application file—we don't want you to change it!
+* We provide new `ekp.properties` settings that you can use instead.
+
+---
+
+# Restricting access to content
+
+Before:
+
+```xml
+<servlet-mapping>
+  <servlet-name>secureServlet</servlet-name>
+  <url-pattern>/nd/fresco/content/*</url-pattern>
+</servlet-mapping>
+<servlet-mapping>
+  <servlet-name>secureServlet</servlet-name>
+  <url-pattern>/nd/fresco/repository/*</url-pattern>
+</servlet-mapping>
+```
+
+After:
+
+```ini
+protectedPaths=/nd/fresco/content/* /nd/fresco/repository/*
+```
+
+If unspecified, equivalent to:
+
+```ini
+protectedPaths=/nd/fresco/batchreports/* /nd/fresco/content/* \
+               /nd/fresco/courses/* /nd/fresco/dataloader/* \
+               /nd/fresco/repository/* /nd/fresco/uploads/*
+```
+
+---
+
+# Session timeout
+
+Before:
+
+```xml
+<session-config>
+  <session-timeout>240</session-timeout>
+</session-config>
+```
+
+After:
+
+```ini
+sessions.timeoutMinutes=240
+```
+
+(Default is 90 minutes.)
+
+---
+
+# Disabling secure sessions
+
+Before:
+
+```xml
+<filter>
+  <filter-name>secureRequestFilter</filter-name>
+  <filter-class>com.netdimen.servlet.SecureRequestFilter</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>secureRequestFilter</filter-name>
+  <url-pattern>/servlet/*</url-pattern>
+</filter-mapping>
+```
+
+After:
+
+```ini
+sessions.secure=false
+```
+
+Default is `sessions.secure=true`.
+
+(Provided for backward compatibility only. **Don't use for new sites!**)
+
+---
+
+# Food for thought
+
+* Multiple sites can share the same applications files!
+* Easy to upgrade multiple sites at once (if that's what you want to do).
+
+---
+
+# Another thought
+
+```
+            /-> Build X
+Tomcat A --/    Build Y <----- Tomcat B
+
+
+                Build X
+Tomcat A --\    Build Y <----- Tomcat B
+            \-> Build Z
+
+
+                Build X
+Tomcat A --\    Build Y    /-- Tomcat B
+            \-> Build Z <-/
+```
+
+---
+
+class: center, middle
+
+# Questions?
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
